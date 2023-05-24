@@ -41,8 +41,7 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
-        barrierLabel:
-            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: DatePickerModel(
           currentTime: currentTime,
           maxTime: maxTime,
@@ -76,8 +75,7 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
-        barrierLabel:
-            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: TimePickerModel(
           currentTime: currentTime,
           locale: locale,
@@ -109,8 +107,7 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
-        barrierLabel:
-            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: Time12hPickerModel(
           currentTime: currentTime,
           locale: locale,
@@ -143,8 +140,7 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
-        barrierLabel:
-            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: DateTimePickerModel(
           currentTime: currentTime,
           minTime: minTime,
@@ -167,6 +163,10 @@ class DatePicker {
     locale: LocaleType.en,
     BasePickerModel? pickerModel,
     DatePickerTheme? theme,
+    double? bottomPadding,
+    double? horizontalPadding,
+    double? maxWidth,
+    BorderRadiusGeometry? borderRadius,
   }) async {
     return await Navigator.push(
       context,
@@ -177,26 +177,33 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
-        barrierLabel:
-            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: pickerModel,
+        bottomPadding: bottomPadding,
+        horizontalPadding: horizontalPadding,
+        maxWidth: maxWidth,
+        borderRadius: borderRadius,
       ),
     );
   }
 }
 
 class _DatePickerRoute<T> extends PopupRoute<T> {
-  _DatePickerRoute({
-    this.showTitleActions,
-    this.onChanged,
-    this.onConfirm,
-    this.onCancel,
-    DatePickerTheme? theme,
-    this.barrierLabel,
-    this.locale,
-    RouteSettings? settings,
-    BasePickerModel? pickerModel,
-  })  : this.pickerModel = pickerModel ?? DatePickerModel(),
+  _DatePickerRoute(
+      {this.showTitleActions,
+      this.onChanged,
+      this.onConfirm,
+      this.onCancel,
+      DatePickerTheme? theme,
+      this.barrierLabel,
+      this.locale,
+      RouteSettings? settings,
+      BasePickerModel? pickerModel,
+      this.bottomPadding,
+      this.horizontalPadding,
+      this.maxWidth,
+      this.borderRadius})
+      : this.pickerModel = pickerModel ?? DatePickerModel(),
         this.theme = theme ?? DatePickerTheme(),
         super(settings: settings);
 
@@ -207,6 +214,11 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
   final LocaleType? locale;
   final DatePickerTheme theme;
   final BasePickerModel pickerModel;
+
+  final double? bottomPadding;
+  final double? horizontalPadding;
+  final double? maxWidth;
+  final BorderRadiusGeometry? borderRadius;
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 200);
@@ -225,14 +237,12 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
   @override
   AnimationController createAnimationController() {
     assert(_animationController == null);
-    _animationController =
-        BottomSheet.createAnimationController(navigator!.overlay!);
+    _animationController = BottomSheet.createAnimationController(navigator!.overlay!);
     return _animationController!;
   }
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     Widget bottomSheet = MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -241,6 +251,10 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
         locale: this.locale,
         route: this,
         pickerModel: pickerModel,
+        bottomPadding: bottomPadding,
+        horizontalPadding: horizontalPadding,
+        maxWidth: maxWidth,
+        borderRadius: borderRadius,
       ),
     );
     return InheritedTheme.captureAll(context, bottomSheet);
@@ -254,6 +268,10 @@ class _DatePickerComponent extends StatefulWidget {
     required this.pickerModel,
     this.onChanged,
     this.locale,
+    this.bottomPadding,
+    this.horizontalPadding,
+    this.maxWidth,
+    this.borderRadius,
   }) : super(key: key);
 
   final DateChangedCallback? onChanged;
@@ -264,6 +282,11 @@ class _DatePickerComponent extends StatefulWidget {
 
   final BasePickerModel pickerModel;
 
+  final double? bottomPadding;
+  final double? horizontalPadding;
+  final double? maxWidth;
+  final BorderRadiusGeometry? borderRadius;
+
   @override
   State<StatefulWidget> createState() {
     return _DatePickerState();
@@ -271,9 +294,7 @@ class _DatePickerComponent extends StatefulWidget {
 }
 
 class _DatePickerState extends State<_DatePickerComponent> {
-  late FixedExtentScrollController leftScrollCtrl,
-      middleScrollCtrl,
-      rightScrollCtrl;
+  late FixedExtentScrollController leftScrollCtrl, middleScrollCtrl, rightScrollCtrl;
 
   @override
   void initState() {
@@ -283,12 +304,9 @@ class _DatePickerState extends State<_DatePickerComponent> {
 
   void refreshScrollOffset() {
 //    print('refreshScrollOffset ${widget.pickerModel.currentRightIndex()}');
-    leftScrollCtrl = FixedExtentScrollController(
-        initialItem: widget.pickerModel.currentLeftIndex());
-    middleScrollCtrl = FixedExtentScrollController(
-        initialItem: widget.pickerModel.currentMiddleIndex());
-    rightScrollCtrl = FixedExtentScrollController(
-        initialItem: widget.pickerModel.currentRightIndex());
+    leftScrollCtrl = FixedExtentScrollController(initialItem: widget.pickerModel.currentLeftIndex());
+    middleScrollCtrl = FixedExtentScrollController(initialItem: widget.pickerModel.currentMiddleIndex());
+    rightScrollCtrl = FixedExtentScrollController(initialItem: widget.pickerModel.currentRightIndex());
   }
 
   @override
@@ -298,19 +316,25 @@ class _DatePickerState extends State<_DatePickerComponent> {
       child: AnimatedBuilder(
         animation: widget.route.animation!,
         builder: (BuildContext context, Widget? child) {
-          final double bottomPadding = MediaQuery.of(context).padding.bottom;
           return ClipRect(
             child: CustomSingleChildLayout(
               delegate: _BottomPickerLayout(
                 widget.route.animation!.value,
                 theme,
                 showTitleActions: widget.route.showTitleActions!,
-                bottomPadding: bottomPadding,
+                bottomPadding: widget.bottomPadding,
+                horizontalPadding: widget.horizontalPadding,
+                maxWidth: widget.maxWidth,
               ),
               child: GestureDetector(
                 child: Material(
-                  color: theme.backgroundColor,
-                  child: _renderPickerView(theme),
+                  color: Colors.transparent,
+                  child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.backgroundColor,
+                        borderRadius: widget.borderRadius,
+                      ),
+                      child: _renderPickerView(theme)),
                 ),
               ),
             ),
@@ -359,8 +383,7 @@ class _DatePickerState extends State<_DatePickerComponent> {
             if (notification.depth == 0 &&
                 notification is ScrollEndNotification &&
                 notification.metrics is FixedExtentMetrics) {
-              final FixedExtentMetrics metrics =
-                  notification.metrics as FixedExtentMetrics;
+              final FixedExtentMetrics metrics = notification.metrics as FixedExtentMetrics;
               final int currentItemIndex = metrics.itemIndex;
               selectedChangedWhenScrollEnd(currentItemIndex);
             }
@@ -449,8 +472,7 @@ class _DatePickerState extends State<_DatePickerComponent> {
             Container(
               child: widget.pickerModel.layoutProportions()[2] > 0
                   ? _renderColumnView(
-                      ValueKey(widget.pickerModel.currentMiddleIndex() * 100 +
-                          widget.pickerModel.currentLeftIndex()),
+                      ValueKey(widget.pickerModel.currentMiddleIndex() * 100 + widget.pickerModel.currentLeftIndex()),
                       theme,
                       widget.pickerModel.rightStringAtIndex,
                       rightScrollCtrl,
@@ -537,14 +559,18 @@ class _BottomPickerLayout extends SingleChildLayoutDelegate {
     this.theme, {
     this.itemCount,
     this.showTitleActions,
-    this.bottomPadding = 0,
+    this.bottomPadding,
+    this.horizontalPadding,
+    this.maxWidth,
   });
 
   final double progress;
   final int? itemCount;
   final bool? showTitleActions;
   final DatePickerTheme theme;
-  final double bottomPadding;
+  final double? bottomPadding;
+  final double? horizontalPadding;
+  final double? maxWidth;
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
@@ -554,17 +580,18 @@ class _BottomPickerLayout extends SingleChildLayoutDelegate {
     }
 
     return BoxConstraints(
-      minWidth: constraints.maxWidth,
-      maxWidth: constraints.maxWidth,
+      minWidth: maxWidth ?? constraints.maxWidth,
+      maxWidth: maxWidth ?? constraints.maxWidth,
       minHeight: 0.0,
-      maxHeight: maxHeight + bottomPadding,
+      maxHeight: maxHeight + (bottomPadding ?? 0),
     );
   }
 
   @override
   Offset getPositionForChild(Size size, Size childSize) {
-    final height = size.height - childSize.height * progress;
-    return Offset(0.0, height);
+    final dy = size.height - childSize.height - (bottomPadding ?? 0);
+    final dx = size.width - childSize.width - (horizontalPadding ?? 0);
+    return Offset(dx, dy);
   }
 
   @override
